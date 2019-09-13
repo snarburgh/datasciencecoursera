@@ -54,7 +54,7 @@ colnames(activityLabels) <- c("label", "activity")
 
 # add subject info
 masterSubjects <- rbind(testSubject, trainSubject)
-masterData$subject <- masterSubjects
+masterData$subID <- masterSubjects
 masterData <- as.data.frame(masterData)
 
 # update activity
@@ -66,19 +66,21 @@ masterData$activity <- labels[,2]
 
 # grab only meana nd std dev measures
 colNames <- colnames(masterData)
-keepCols <- grep("mean|std|label|activity|subject", colNames)
+keepCols <- grep("mean|std|label|activity|subID", colNames)
 subsetMaster <- as.data.frame(masterData[,keepCols])
 
 # convert to numeric
 numCols <- grep("std|mean",colnames(subsetMaster))
 subsetMaster[,numCols] <- sapply(subsetMaster[,numCols],
                                  as.numeric)
+subsetMaster$subID <- as.numeric(subsetMaster$subID)
 
 # make df that includes mean for each 
 # variable for each activity and each subject
 
 aggData <- subsetMaster %>%
-  group_by(activity,subject) %>%
+  select(-label) %>%
+  group_by(activity,subID) %>%
   summarise_all("mean")
 
 
