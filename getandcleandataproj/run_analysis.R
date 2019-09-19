@@ -2,42 +2,46 @@
 library(readxl)
 library(dplyr)
 
+# set string to current location
+filePre <- getwd()
+
 # loading data
-testData <- read.table("~/Documents/coursera/datasciencecoursera/getandcleandataproj/UCI HAR Dataset/test/X_test.txt", 
+testData <- read.table(paste0(filePre, "/getandcleandataproj/UCI HAR Dataset/test/X_test.txt"), 
                        quote="\"", 
                        comment.char="", 
                        stringsAsFactors=FALSE)
 
-testLabel <- read.table("~/Documents/coursera/datasciencecoursera/getandcleandataproj/UCI HAR Dataset/test/Y_test.txt", 
+testLabel <- read.table(paste0(filePre, "/getandcleandataproj/UCI HAR Dataset/test/Y_test.txt"), 
                         quote="\"", 
                         comment.char="", 
                         stringsAsFactors=FALSE)
 
-testSubject <- read.table("~/Documents/coursera/datasciencecoursera/getandcleandataproj/UCI HAR Dataset/test/subject_test.txt", 
+testSubject <- read.table(paste0(filePre, "/getandcleandataproj/UCI HAR Dataset/test/subject_test.txt"), 
                           quote="\"", 
                           comment.char="", 
                           stringsAsFactors=FALSE)
 
-trainData <- read.table("~/Documents/coursera/datasciencecoursera/getandcleandataproj/UCI HAR Dataset/train/X_train.txt", 
+trainData <- read.table(paste0(filePre, "/getandcleandataproj/UCI HAR Dataset/train/X_train.txt"), 
                         quote="\"", 
                         comment.char="", 
                         stringsAsFactors=FALSE)
 
-trainLabel <- read.table("~/Documents/coursera/datasciencecoursera/getandcleandataproj/UCI HAR Dataset/train/Y_train.txt", 
+trainLabel <- read.table(paste0(filePre,"/getandcleandataproj/UCI HAR Dataset/train/Y_train.txt"), 
                          quote="\"", 
                          comment.char="", 
                          stringsAsFactors=FALSE)
-trainSubject <- read.table("~/Documents/coursera/datasciencecoursera/getandcleandataproj/UCI HAR Dataset/train/subject_train.txt", 
+
+trainSubject <- read.table(paste0(filePre, "/getandcleandataproj/UCI HAR Dataset/train/subject_train.txt"), 
                            quote="\"", 
                            comment.char="", 
                            stringsAsFactors=FALSE)
 
-features<- read.table("~/Documents/coursera/datasciencecoursera/getandcleandataproj/UCI HAR Dataset/features.txt", 
+features<- read.table(paste0(filePre, "/getandcleandataproj/UCI HAR Dataset/features.txt"), 
                       quote="\"", 
                       comment.char="", 
                       stringsAsFactors=FALSE)
 
-activityLabels <- read.table("~/Documents/coursera/datasciencecoursera/getandcleandataproj/UCI HAR Dataset/activity_labels.txt", 
+activityLabels <- read.table(paste0(filePre, "/getandcleandataproj/UCI HAR Dataset/activity_labels.txt"), 
                              quote="\"", 
                              comment.char="", 
                              stringsAsFactors=FALSE)
@@ -54,7 +58,7 @@ colnames(activityLabels) <- c("label", "activity")
 
 # add subject info
 masterSubjects <- rbind(testSubject, trainSubject)
-masterData$subID <- masterSubjects
+masterData$subID <- masterSubjects[,1]
 masterData <- as.data.frame(masterData)
 
 # update activity
@@ -75,6 +79,17 @@ subsetMaster[,numCols] <- sapply(subsetMaster[,numCols],
                                  as.numeric)
 subsetMaster$subID <- as.numeric(subsetMaster$subID)
 
+# update names
+colNames <- colnames(subsetMaster)
+colNames <- gsub("Acc", "Accelerometer", colNames) 
+colNames <- gsub("Gyro", "Gyroscope", colNames)
+colNames <- gsub("Mag", "Magnitude", colNames) 
+colNames <- gsub("BodyBody", "Body", colNames) 
+colNames <- gsub("^f", "Frequency", colNames) 
+colNames <- gsub("^t", "Time", colNames)
+colnames(subsetMaster) <- colNames
+
+
 # make df that includes mean for each 
 # variable for each activity and each subject
 
@@ -82,5 +97,14 @@ aggData <- subsetMaster %>%
   select(-label) %>%
   group_by(activity,subID) %>%
   summarise_all("mean")
+
+
+# print to text file
+write.table(aggData,
+            paste0(filePre, "/getandcleandataproj/aggData.txt"),
+            sep="\t",
+            row.names=FALSE)
+
+
 
 
