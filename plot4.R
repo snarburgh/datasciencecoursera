@@ -52,4 +52,4 @@ plot(testData$DateTime, testData$Global_reactive_power,
      type = "l",
      ylab = "Global Rective Power",
      xlab = "DateTime")
-dev.off()
+#dev.off()
